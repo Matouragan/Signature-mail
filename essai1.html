@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modification de la signature PDF</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        label {
+            display: block;
+            margin-top: 10px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+        }
+
+        button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Remplir la signature PDF</h1>
+
+    <form id="pdfForm">
+        <label for="name">Prénom NOM</label>
+        <input type="text" id="name" placeholder="Entrez votre prénom et nom">
+
+        <label for="fonction">Fonction</label>
+        <input type="text" id="fonction" placeholder="Entrez votre fonction">
+
+        <label for="telephone">Téléphone</label>
+        <input type="text" id="telephone" placeholder="Entrez votre téléphone">
+
+        <label for="adresse">Adresse</label>
+        <input type="text" id="adresse" placeholder="Entrez votre adresse">
+
+        <button type="button" onclick="generatePDF()">Générer le PDF</button>
+    </form>
+
+    <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
+    <script>
+        async function generatePDF() {
+            // Charger le PDF modèle
+            const existingPdfBytes = await fetch('http://localhost:8000/signature_mail.pdf').then(res => res.arrayBuffer());
+
+            // Charger et modifier le PDF
+            const pdfDoc = await PDFLib.PDFDocument.load(existingPdfBytes);
+            const pages = pdfDoc.getPages();
+            const firstPage = pages[0];
+
+            // Obtenir les valeurs du formulaire
+            const name = document.getElementById('name').value;
+            const fonction = document.getElementById('fonction').value;
+            const telephone = document.getElementById('telephone').value;
+            const adresse = document.getElementById('adresse').value;
+
+            // Ajouter les textes au PDF
+            firstPage.drawText(name, { x: 120, y: 520, size: 12 }); // Coordonnées à ajuster selon le modèle
+            firstPage.drawText(fonction, { x: 120, y: 500, size: 12 });
+            firstPage.drawText(telephone, { x: 120, y: 480, size: 12 });
+            firstPage.drawText(adresse, { x: 120, y: 460, size: 12 });
+
+            // Sauvegarder le PDF
+            const pdfBytes = await pdfDoc.save();
+
+            // Télécharger le PDF modifié
+            const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'signature_modifiee.pdf';
+            link.click();
+        }
+    </script>
+</body>
+</html>
